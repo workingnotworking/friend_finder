@@ -15,21 +15,15 @@ module FriendFinder
     klass = provider_to_class_name(provider)
     finder = begin
       const_get("FriendFinder::#{klass}")
-    rescue
-      nil
+    # rescue
+    #   nil
     end
-    options = scrub_options(options)
     finder.new(options) if finder
   end
 
   def self.provider_to_class_name(provider)
     string = provider.to_s.sub(/^[a-z\d]*/) { $&.capitalize }
     string.gsub(/(?:_|(\/))([a-z\d]*)/) { "#{$1}#{$2.capitalize}" }.gsub('/', '::')
-  end
-
-  def self.scrub_options(options)
-    options.delete(:page) if page.nil
-    options
   end
 
 end

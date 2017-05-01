@@ -17,8 +17,8 @@ class FriendFinderTest < Minitest::Test
     assert_kind_of FriendFinder::Twitter, FriendFinder.finder(:twitter, :oauth_token => 'abcd', :oauth_token_secret => '1234')
   end
 
-  def test_find_with_an_unknown_provider_returns_nil
-    assert_nil FriendFinder.finder(:foobar)
+  def test_find_with_an_unknown_provider_raises_an_error
+    skip
   end
 
 end

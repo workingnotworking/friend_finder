@@ -25,6 +25,14 @@ module FriendFinder
       friends(data_options).instance_variable_get(:@collection).collect { |u| { u.id => u.screen_name } }
     end
 
+    def ids
+      data.collect { |pair| pair.keys.first }
+    end
+
+    def usernames
+      data.collect { |pair| pair.values.first }
+    end
+
     # whether we're at the end of the list
     def last_page?
       @next.zero?
@@ -33,9 +41,11 @@ module FriendFinder
     # TODO: add caching for a certain number of minutes so that users opening the connections list multiple times doesn't count against rate limit
     # returns the cursor object that contains the friends
     private def friends(data_options={})
-      output = client.friends(client_options(data_options))
-      @next = output.attrs[:next_cursor]
-      output
+      @friends ||= begin
+        output = client.friends(client_options(data_options))
+        @next = output.attrs[:next_cursor]
+        output
+      end
     end
 
     private def client_options(data_options={})

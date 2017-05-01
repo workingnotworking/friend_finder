@@ -38,7 +38,6 @@ module FriendFinder
       @next.zero?
     end
 
-    # TODO: add caching for a certain number of minutes so that users opening the connections list multiple times doesn't count against rate limit
     # returns the cursor object that contains the friends
     private def friends(data_options={})
       @friends ||= begin
@@ -46,6 +45,10 @@ module FriendFinder
         @next = output.attrs[:next_cursor]
         output
       end
+    rescue ::Twitter::Error::Unauthorized => e
+      raise FriendFinder::Unauthorized
+    rescue ::Twitter::Error::TooManyRequests
+      raise FriendFinder::RateLimit
     end
 
     private def client_options(data_options={})

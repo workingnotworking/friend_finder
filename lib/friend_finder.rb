@@ -4,6 +4,9 @@ require 'friend_finder/twitter'
 
 module FriendFinder
 
+  class Unauthorized < StandardError; end
+  class RateLimit < StandardError; end
+
   class << self
     attr_reader :config
 

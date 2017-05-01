@@ -61,4 +61,22 @@ class TwitterTest < Minitest::Test
     assert_equal(['foobar'], client.usernames)
   end
 
+  def test_unauthorized_access_raises_a_friend_finder_error_instead
+    ::Twitter::REST::Client.any_instance.expects(:friends).raises(::Twitter::Error::Unauthorized)
+    client = FriendFinder::Twitter.new(:oauth_token => 'abcd', :oauth_token_secret => '1234')
+
+    assert_raises FriendFinder::Unauthorized do
+      client.data
+    end
+  end
+
+  def test_hitting_the_rate_limit_raises_a_friend_finder_error_instead
+    ::Twitter::REST::Client.any_instance.expects(:friends).raises(::Twitter::Error::TooManyRequests)
+    client = FriendFinder::Twitter.new(:oauth_token => 'abcd', :oauth_token_secret => '1234')
+
+    assert_raises FriendFinder::RateLimit do
+      client.data
+    end
+  end
+
 end

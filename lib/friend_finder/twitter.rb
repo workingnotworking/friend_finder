@@ -42,7 +42,7 @@ module FriendFinder
       {
         :skip_status => true,
         :count => PER_PAGE,
-        :cursor => options[:cursor] || DEFAULT_PAGE
+        :cursor => options[:page] || DEFAULT_PAGE
       }.merge(data_options)
     end
 

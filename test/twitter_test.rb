@@ -26,6 +26,23 @@ class TwitterTest < Minitest::Test
     assert_equal 12345, client.next
   end
 
+  def test_last_page_returns_false_if_there_are_more_results
+    client = FriendFinder::Twitter.new(:oauth_token => 'abcd', :oauth_token_secret => '1234')
+    client.data
+
+    assert !client.last_page?
+  end
+
+  def test_last_page_returns_true_if_there_are_no_more_results
+    friends = stub('friends', :attrs => { :next_cursor => 0 })
+    friends.instance_variable_set(:@collection, [stub('user', :id => 1234, :screen_name => 'foobar')])
+    ::Twitter::REST::Client.any_instance.stubs(:friends => friends)
+    client = FriendFinder::Twitter.new(:oauth_token => 'abcd', :oauth_token_secret => '1234')
+    client.data
+
+    assert client.last_page?
+  end
+
   def test_collection_returns_a_hash_of_id_to_username
     client = FriendFinder::Twitter.new(:oauth_token => 'abcd', :oauth_token_secret => '1234')
 

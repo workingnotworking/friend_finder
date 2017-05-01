@@ -2,6 +2,12 @@ require 'test_helper'
 
 class TwitterTest < Minitest::Test
 
+  def setup
+    FriendFinder.configure do |config|
+      config.twitter = { :key => 'foo', :secret => 'bar' }
+    end
+  end
+
   def test_initialzing_twitter
     client = FriendFinder::Twitter.new(:oauth_token => 'abcd', :oauth_token_secret => '1234')
 

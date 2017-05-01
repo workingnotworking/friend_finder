@@ -2,7 +2,7 @@ require 'twitter'
 
 module FriendFinder
 
-  PER_PAGE = 5
+  PER_PAGE = 200
   DEFAULT_PAGE = -1
 
   class Twitter
@@ -13,8 +13,8 @@ module FriendFinder
       @options = options
       @next = nil
       @client ||= ::Twitter::REST::Client.new do |config|
-        config.consumer_key        = options[:key]
-        config.consumer_secret     = options[:secret]
+        config.consumer_key        = FriendFinder.config.twitter[:key]
+        config.consumer_secret     = FriendFinder.config.twitter[:secret]
         config.access_token        = options[:oauth_token]
         config.access_token_secret = options[:oauth_token_secret]
       end

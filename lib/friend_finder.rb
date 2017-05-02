@@ -4,7 +4,11 @@ require 'friend_finder/twitter'
 
 module FriendFinder
 
+  # raised if user does not have a valid oauth token for the selected network
+  class MissingAuthentication < StandardError; end
+  # raised if the oauth token is not valid
   class Unauthorized < StandardError; end
+  # raised if the user goes over their alloted rate limit
   class RateLimit < StandardError; end
 
   class << self

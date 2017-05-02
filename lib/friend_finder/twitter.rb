@@ -7,7 +7,7 @@ module FriendFinder
 
   class Twitter
 
-    attr_reader :identity, :options, :client
+    attr_reader :options, :client
 
     def initialize(options={})
       @options = options
@@ -40,6 +40,8 @@ module FriendFinder
     # returns the cursor object that contains the friends
     private def friends(data_options={})
       @friends ||= client.friends(client_options(data_options))
+    rescue ::Twitter::Error::Forbidden => e
+      raise FriendFinder::MissingAuthentication
     rescue ::Twitter::Error::Unauthorized => e
       raise FriendFinder::Unauthorized
     rescue ::Twitter::Error::TooManyRequests

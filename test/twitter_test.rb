@@ -6,64 +6,50 @@ class TwitterTest < Minitest::Test
     FriendFinder.configure do |config|
       config.twitter = { :key => 'foo', :secret => 'bar' }
     end
-    friends = stub('friends', :attrs => { :next_cursor => 12345 })
+    @next_cursor = 12345
+    @token = SecureRandom.uuid
+    @secret = SecureRandom.uuid
+
+    friends = stub('friends', :attrs => { :next_cursor => @next_cursor })
     friends.instance_variable_set(:@collection, [stub('user', :id => 1234, :screen_name => 'foobar')])
-
     ::Twitter::REST::Client.any_instance.stubs(:friends => friends)
+
+    @client = FriendFinder::Twitter.new(:oauth_token => @token, :oauth_token_secret => @secret)
   end
 
-  def test_initialzing_twitter
-    client = FriendFinder::Twitter.new(:oauth_token => 'abcd', :oauth_token_secret => '1234')
-
-    assert_equal 'abcd', client.options[:oauth_token]
-    assert_equal '1234', client.options[:oauth_token_secret]
+  def test_initialzing_twitter_saves_oauth_tokens
+    assert_equal @token, @client.options[:oauth_token]
+    assert_equal @secret, @client.options[:oauth_token_secret]
   end
 
-  def test_instance_variable_next_returns_the_next_cursor
-    client = FriendFinder::Twitter.new(:oauth_token => 'abcd', :oauth_token_secret => '1234')
-    client.data
-
-    assert_equal 12345, client.next
+  def test_next_page_returns_the_next_cursor
+    assert_equal @next_cursor, @client.next_page
   end
 
-  def test_last_page_returns_false_if_there_are_more_results
-    client = FriendFinder::Twitter.new(:oauth_token => 'abcd', :oauth_token_secret => '1234')
-    client.data
-
-    assert !client.last_page?
-  end
-
-  def test_last_page_returns_true_if_there_are_no_more_results
+  def test_next_page_of_zero_returns_nil
     friends = stub('friends', :attrs => { :next_cursor => 0 })
     friends.instance_variable_set(:@collection, [stub('user', :id => 1234, :screen_name => 'foobar')])
     ::Twitter::REST::Client.any_instance.stubs(:friends => friends)
-    client = FriendFinder::Twitter.new(:oauth_token => 'abcd', :oauth_token_secret => '1234')
-    client.data
+    client = FriendFinder::Twitter.new(:oauth_token => @token, :oauth_token_secret => @secret)
 
-    assert client.last_page?
+    assert_nil client.next_page
   end
 
   def test_collection_returns_a_hash_of_id_to_username
-    client = FriendFinder::Twitter.new(:oauth_token => 'abcd', :oauth_token_secret => '1234')
-
-    assert_equal([1234 => 'foobar'], client.data)
+    assert_equal([1234 => 'foobar'], @client.data)
   end
 
   def test_ids_returns_only_the_ids
-    client = FriendFinder::Twitter.new(:oauth_token => 'abcd', :oauth_token_secret => '1234')
-
-    assert_equal([1234], client.ids)
+    assert_equal([1234], @client.ids)
   end
 
   def test_usernames_returns_only_the_usernames
-    client = FriendFinder::Twitter.new(:oauth_token => 'abcd', :oauth_token_secret => '1234')
-
-    assert_equal(['foobar'], client.usernames)
+    assert_equal(['foobar'], @client.usernames)
   end
 
   def test_unauthorized_access_raises_a_friend_finder_error_instead
     ::Twitter::REST::Client.any_instance.expects(:friends).raises(::Twitter::Error::Unauthorized)
-    client = FriendFinder::Twitter.new(:oauth_token => 'abcd', :oauth_token_secret => '1234')
+    client = FriendFinder::Twitter.new(:oauth_token => @token, :oauth_token_secret => @secret)
 
     assert_raises FriendFinder::Unauthorized do
       client.data
@@ -72,7 +58,7 @@ class TwitterTest < Minitest::Test
 
   def test_hitting_the_rate_limit_raises_a_friend_finder_error_instead
     ::Twitter::REST::Client.any_instance.expects(:friends).raises(::Twitter::Error::TooManyRequests)
-    client = FriendFinder::Twitter.new(:oauth_token => 'abcd', :oauth_token_secret => '1234')
+    client = FriendFinder::Twitter.new(:oauth_token => @token, :oauth_token_secret => @secret)
 
     assert_raises FriendFinder::RateLimit do
       client.data

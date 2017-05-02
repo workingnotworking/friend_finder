@@ -7,7 +7,7 @@ module FriendFinder
 
   class Twitter
 
-    attr_reader :identity, :options, :next, :client
+    attr_reader :identity, :options, :client
 
     def initialize(options={})
       @options = options
@@ -33,18 +33,13 @@ module FriendFinder
       data.collect { |pair| pair.values.first }
     end
 
-    # whether we're at the end of the list
-    def last_page?
-      @next.zero?
+    def next_page
+      @next_page ||= friends.attrs[:next_cursor].zero? ? nil : friends.attrs[:next_cursor]
     end
 
     # returns the cursor object that contains the friends
     private def friends(data_options={})
-      @friends ||= begin
-        output = client.friends(client_options(data_options))
-        @next = output.attrs[:next_cursor]
-        output
-      end
+      @friends ||= client.friends(client_options(data_options))
     rescue ::Twitter::Error::Unauthorized => e
       raise FriendFinder::Unauthorized
     rescue ::Twitter::Error::TooManyRequests
